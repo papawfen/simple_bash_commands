@@ -1,0 +1,47 @@
+function types {
+    case "$2" in
+        conf) echo "Configuration files (with the .conf extension) = $(find $1 -maxdepth 1 -type f -name "*.conf" | wc -l)";;
+        txt) echo "Text files = $(find $1 -maxdepth 1 -type f -name "*.txt" | wc -l)";;
+        execut) echo "Executable files = $(find $1 -maxdepth 1 -executable -type f | wc -l)";;
+        log) echo "Log files (with the .log extension) = $(find $1 -maxdepth 1 -type f -name "*.log" | wc -l)";;
+        arch) echo "Archive files = $(find $1 -maxdepth 1 -type f -name "*.rar" -o -name "*.tar" -o -name "*.zip" | wc -l)";;
+        symb) echo "Symbolic links = $(find $1 -maxdepth 1 -type l | wc -l)";;
+	esac
+}
+
+
+function top_find {
+    TOP10_EXECUT=$(find $1 -maxdepth 1 -type f -executable -exec file {} \;|grep -wE "executable|ELF|script" ) 
+    for ((i = 1; i <=10; i++))
+    do
+        F_PATH=$(echo "$TOP10_EXECUT" | awk -F ":" -v i=$i '{if (NR == i) print $1 }')
+        F_SIZE=$(du -h $F_PATH | awk '{print $1 }')
+
+        if [[ -n $F_SIZE ]]
+        then
+            if [[ -n $F_PATH ]]
+            then
+                md5=($(md5sum $F_PATH))
+                echo "$i - $F_PATH", "$F_SIZE", "$md5"
+            fi
+        fi
+    done
+}
+
+
+function top {
+    TOP10=$(find $1 -maxdepth 1 -type f -exec du -Shxa {} + |  sort -hr | head -10) 
+    for ((i = 1; i <=10; i++))
+    do
+        F_SIZE=$(echo "$TOP10" | awk -v i=$i '{if (NR == i) print $1 }')
+        F_PATH=$(echo "$TOP10" | awk -v i=$i '{if (NR == i) print $2 }')
+
+        if [[ -n $F_SIZE ]]
+        then
+        if [[ -n $F_PATH ]]
+        then
+            echo "$i - $F_PATH", "$F_SIZE", "${F_PATH##*.}"
+        fi
+        fi
+    done
+}

@@ -1,0 +1,7 @@
+echo "Save data into file?(Y(y)/N(n)...): ";
+read answer;
+if [ $answer = "y" ] || [ $answer = "Y" ]; then
+./data > "$(date +"%d_%m_%y_%H_%M_%S.status")"
+else
+exit 1
+fi
